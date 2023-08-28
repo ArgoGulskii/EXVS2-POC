@@ -59,6 +59,11 @@ static BOOL WINAPI SetWindowPosHook(HWND hWnd, HWND hWndInsertAfter, int  X, int
         return SetWindowPosOri(hWnd, HWND_TOP, X, Y, cx, cy, uFlags);
     }
 
+    if (hWndInsertAfter == HWND_TOPMOST)
+    {
+        hWndInsertAfter = HWND_TOP;
+    }
+
     return SetWindowPosOri(hWnd, hWndInsertAfter, X, Y, cx, cy, uFlags);
 }
 
