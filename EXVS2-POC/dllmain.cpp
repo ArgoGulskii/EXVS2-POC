@@ -4,12 +4,13 @@
 #include <thread>
 
 #include "AmAuthEmu.h"
+#include "Configs.h"
 #include "GameHooks.h"
-#include "JvsEmu.h"
-#include "WindowedDxgi.h"
 #include "INIReader.h"
+#include "JvsEmu.h"
+#include "SocketHooks.h"
 #include "VirtualKeyMapping.h"
-#include "configs.h"
+#include "WindowedDxgi.h"
 
 config_struct ReadConfigs(INIReader reader) {
     config_struct config {};
@@ -20,11 +21,15 @@ config_struct ReadConfigs(INIReader reader) {
     config.PcbId = reader.Get("config", "PcbId", "ABLN1110001");
     config.Serial = reader.Get("config", "serial", "284311110001");
     config.Mode = static_cast<uint8_t>(reader.GetInteger("config", "mode", 2));
-    config.IpAddress = reader.Get("config", "IpAddress", "192.168.50.239");
-    config.Gateway = reader.Get("config", "Gateway", "192.168.50.1");
-    config.SubnetMask = reader.Get("config", "SubnetMask", "255.255.255.0");
-    config.PrimaryDNS = reader.Get("config", "DNS", "8.8.8.8");
-    config.TenpoRouter = reader.Get("config", "TenpoRouter", "192.168.50.1");
+
+    // These will get filled in by InitializeSocketHooks.
+    config.InterfaceName = reader.GetOptional("config", "InterfaceName");
+    config.IpAddress = reader.GetOptional("config", "IpAddress");
+    config.Gateway = reader.GetOptional("config", "Gateway");
+    config.TenpoRouter = reader.GetOptional("config", "TenpoRouter");
+    config.SubnetMask = reader.GetOptional("config", "SubnetMask");
+    config.PrimaryDNS = reader.GetOptional("config", "DNS");
+
     config.AuthServerIp = reader.Get("config", "AuthIP", "127.0.0.1");
     config.ServerAddress = reader.Get("config", "Server", "127.0.0.1");
     config.RegionCode = reader.Get("config", "Region", "1");
@@ -109,6 +114,13 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
         globalConfig = ReadConfigs(reader);
     }
 
+    AllocConsole();
+
+    FILE* dummy;
+    freopen_s(&dummy, "CONIN$", "r", stdin);
+    freopen_s(&dummy, "CONOUT$", "w", stderr);
+    freopen_s(&dummy, "CONOUT$", "w", stdout);
+
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
@@ -117,6 +129,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
             InitializeHooks();
             InitializeJvs();
             InitDXGIWindowHook();
+            InitializeSocketHooks();
         }
         break;
     case DLL_THREAD_ATTACH:  // NOLINT(bugprone-branch-clone)
