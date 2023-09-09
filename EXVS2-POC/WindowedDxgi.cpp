@@ -6,24 +6,30 @@
 #include <Windows.h>
 #pragma optimize("", off)
 
-#include "dxgi1_2.h"
-#include "dxgi1_3.h"
-#include "dxgi1_4.h"
-#include "dxgi1_5.h"
-#include "dxgi1_6.h"
-#include "d3d12.h"
+#include <dxgi1_2.h>
+#include <dxgi1_3.h>
+#include <dxgi1_4.h>
+#include <dxgi1_5.h>
+#include <dxgi1_6.h>
+#include <d3d12.h>
 #pragma comment(lib, "d3d12.lib")
+
+#include <chrono>
 
 #include <intrin.h>
 
 #include "injector.hpp"
+#include "log.h"
 #include "MinHook.h"
 #include "Configs.h"
+
+using namespace std::chrono_literals;
 
 static IDXGISwapChain* g_swapChain;
 
 // Hook trampolines
 static HRESULT(STDMETHODCALLTYPE* g_origSetFullscreenState)(IDXGISwapChain* This, BOOL Fullscreen, IDXGIOutput* pTarget);
+static HRESULT(STDMETHODCALLTYPE* g_origPresent)(IDXGISwapChain* This, UINT SyncInterval, UINT Flags);
 static HRESULT(STDMETHODCALLTYPE* g_origCreateSwapChain)(IDXGIFactory2* This, IUnknown* pDevice, DXGI_SWAP_CHAIN_DESC* pDesc, IDXGISwapChain** ppSwapChain);
 static HRESULT(WINAPI* g_origCreateDXGIFactory2)(UINT Flags, REFIID riid, void** ppFactory);
 static BOOL(WINAPI* g_origSetWindowPos)(HWND hWnd, HWND hWndInsertAfter, int  X, int  Y, int  cx, int  cy, UINT uFlags);
@@ -45,7 +51,7 @@ inline T HookVtableFunction(T* functionPtr, T target)
 	return old;
 }
 
-static HRESULT STDMETHODCALLTYPE SetFullscreenStateWrap(IDXGISwapChain* This, BOOL Fullscreen, IDXGIOutput* pTarget)
+static HRESULT STDMETHODCALLTYPE SetFullscreenStateHook(IDXGISwapChain* This, BOOL Fullscreen, IDXGIOutput* pTarget)
 {
 	if (!globalConfig.Windowed)
 	{
@@ -54,19 +60,39 @@ static HRESULT STDMETHODCALLTYPE SetFullscreenStateWrap(IDXGISwapChain* This, BO
 	return S_OK;
 }
 
-static HRESULT STDMETHODCALLTYPE CreateSwapChainWrap(IDXGIFactory2* This, IUnknown* pDevice, DXGI_SWAP_CHAIN_DESC* pDesc, IDXGISwapChain** ppSwapChain)
+static HRESULT STDMETHODCALLTYPE PresentHook(IDXGISwapChain* This, UINT SyncInterval, UINT Flags)
 {
+	static std::chrono::high_resolution_clock::time_point last;
+
+	HRESULT rc = g_origPresent(This, SyncInterval, Flags);
+
+	auto desired = last + 16'666'666ns;
+
+	// TODO: Instead of spinning, sleep for X ms and then spin.
+	while (std::chrono::high_resolution_clock::now() < desired);
+
+	last = std::chrono::high_resolution_clock::now();
+	return rc;
+}
+
+static HRESULT STDMETHODCALLTYPE CreateSwapChainHook(IDXGIFactory2* This, IUnknown* pDevice, DXGI_SWAP_CHAIN_DESC* pDesc, IDXGISwapChain** ppSwapChain)
+{
+	info("CreateSwapChain(%dx%d@%d, SampleCount=%d, SampleQuality=%d, BufferCount=%d)", pDesc->BufferDesc.Width, pDesc->BufferDesc.Height, pDesc->BufferDesc.RefreshRate, pDesc->SampleDesc.Count, pDesc->SampleDesc.Quality, pDesc->BufferCount);
+
 	auto hr = g_origCreateSwapChain(This, pDevice, pDesc, ppSwapChain);
 	if (*ppSwapChain)
 	{
-		auto old = HookVtableFunction(&(*ppSwapChain)->lpVtbl->SetFullscreenState, SetFullscreenStateWrap);
-		g_origSetFullscreenState = (old) ? old : g_origSetFullscreenState;
+		auto oldSetFullScreenState = HookVtableFunction(&(*ppSwapChain)->lpVtbl->SetFullscreenState, SetFullscreenStateHook);
+		g_origSetFullscreenState = (oldSetFullScreenState) ? oldSetFullScreenState : g_origSetFullscreenState;
+
+		auto oldPresent = HookVtableFunction(&(*ppSwapChain)->lpVtbl->Present, PresentHook);
+		g_origPresent = (oldPresent) ? oldPresent : g_origPresent;
 	}
 	g_swapChain = *ppSwapChain;
 	return hr;
 }
 
-static HRESULT WINAPI CreateDXGIFactory2Wrap(UINT Flags, REFIID riid, void** ppFactory)
+static HRESULT WINAPI CreateDXGIFactory2Hook(UINT Flags, REFIID riid, void** ppFactory)
 {
 	HRESULT hr = g_origCreateDXGIFactory2(Flags, riid, ppFactory);
 
@@ -74,7 +100,7 @@ static HRESULT WINAPI CreateDXGIFactory2Wrap(UINT Flags, REFIID riid, void** ppF
 	{
 		IDXGIFactory2* factory = (IDXGIFactory2*)*ppFactory;
 
-		auto old = HookVtableFunction(&factory->lpVtbl->CreateSwapChain, CreateSwapChainWrap);
+		auto old = HookVtableFunction(&factory->lpVtbl->CreateSwapChain, CreateSwapChainHook);
 		g_origCreateSwapChain = (old) ? old : g_origCreateSwapChain;
 	}
 
@@ -134,6 +160,6 @@ void InitDXGIWindowHook()
 	MH_CreateHookApi(L"user32.dll", "CreateWindowExW", CreateWindowExWHook, reinterpret_cast<void**>(&g_origCreateWindowExW));
 	MH_CreateHookApi(L"user32.dll", "MoveWindow", MoveWindowHook, reinterpret_cast<void**>(&g_origMoveWindow));
 	MH_CreateHookApi(L"user32.dll", "SetWindowPos", SetWindowPosHook, reinterpret_cast<void**>(&g_origSetWindowPos));
-	MH_CreateHookApi(L"dxgi.dll", "CreateDXGIFactory2", CreateDXGIFactory2Wrap, (void**)&g_origCreateDXGIFactory2);
+	MH_CreateHookApi(L"dxgi.dll", "CreateDXGIFactory2", CreateDXGIFactory2Hook, (void**)&g_origCreateDXGIFactory2);
 	MH_EnableHook(nullptr);
 }
