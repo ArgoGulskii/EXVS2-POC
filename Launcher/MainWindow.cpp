@@ -2,6 +2,7 @@
 
 #include <utility>
 
+#include "EXVSLauncher.h"
 
 static std::string to_string(System::String^ str)
 {
@@ -192,6 +193,8 @@ namespace EXVSLauncher
 
 	System::Void MainWindow::buttonLaunch_Click(System::Object^ sender, System::EventArgs^ e)
 	{
+		// TODO: Validate the configuration and display errors to the user.
+		Launch(state_->config);
 	}
 
 	System::Void MainWindow::textName_Changed(System::Object^ sender, System::EventArgs^ e)
