@@ -113,6 +113,8 @@ namespace EXVSLauncher
 
 	System::Void MainWindow::MainWindow_Load(System::Object^ sender, System::EventArgs^ e)
 	{
+		// TODO: Serialize/deserialize the config to/from disk.
+		state_->config.rebindOnLaunch = true;
 		state_->config.gamePath = "C:\\GXX10JPN27\\vsac25_Release.exe";
 		state_->config.serverPath = "C:\\GXX10JPN27\\Server\\Server.exe";
 		state_->config.clients.emplace_back(ClientConfiguration {
