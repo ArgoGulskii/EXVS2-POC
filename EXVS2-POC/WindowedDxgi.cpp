@@ -30,11 +30,13 @@ static IDXGISwapChain* g_swapChain;
 // Hook trampolines
 static HRESULT(STDMETHODCALLTYPE* g_origSetFullscreenState)(IDXGISwapChain* This, BOOL Fullscreen, IDXGIOutput* pTarget);
 static HRESULT(STDMETHODCALLTYPE* g_origPresent)(IDXGISwapChain* This, UINT SyncInterval, UINT Flags);
+static HRESULT(STDMETHODCALLTYPE* g_origResizeBuffers)(IDXGISwapChain* This, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT NewFormat, UINT SwapChainFlags);
 static HRESULT(STDMETHODCALLTYPE* g_origCreateSwapChain)(IDXGIFactory2* This, IUnknown* pDevice, DXGI_SWAP_CHAIN_DESC* pDesc, IDXGISwapChain** ppSwapChain);
 static HRESULT(WINAPI* g_origCreateDXGIFactory2)(UINT Flags, REFIID riid, void** ppFactory);
 static BOOL(WINAPI* g_origSetWindowPos)(HWND hWnd, HWND hWndInsertAfter, int  X, int  Y, int  cx, int  cy, UINT uFlags);
 static HWND(WINAPI* g_origCreateWindowExW)(DWORD dwExStyle, LPCWSTR lpClassName, LPCWSTR lpWindowName, DWORD dwStyle, int X, int Y, int nWidth, int nHeight, HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam);
 static BOOL(WINAPI* g_origMoveWindow)(HWND hWnd, int X, int Y, int nWidth, int nHeight, BOOL bRepaint);
+
 
 // Functions
 template<typename T>
@@ -75,10 +77,15 @@ static HRESULT STDMETHODCALLTYPE PresentHook(IDXGISwapChain* This, UINT SyncInte
 	return rc;
 }
 
+static HRESULT STDMETHODCALLTYPE ResizeBuffersHook(IDXGISwapChain* This, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT NewFormat, UINT SwapChainFlags)
+{
+	info("ResizeBuffers(%dx%d)", Width, Height);
+	return g_origResizeBuffers(This, BufferCount, Width, Height, NewFormat, SwapChainFlags);
+}
+
 static HRESULT STDMETHODCALLTYPE CreateSwapChainHook(IDXGIFactory2* This, IUnknown* pDevice, DXGI_SWAP_CHAIN_DESC* pDesc, IDXGISwapChain** ppSwapChain)
 {
-	info("CreateSwapChain(%dx%d@%d, SampleCount=%d, SampleQuality=%d, BufferCount=%d)", pDesc->BufferDesc.Width, pDesc->BufferDesc.Height, pDesc->BufferDesc.RefreshRate, pDesc->SampleDesc.Count, pDesc->SampleDesc.Quality, pDesc->BufferCount);
-
+	info("CreateSwapChain(%dx%d@%d, OutputWindow=%p)", pDesc->BufferDesc.Width, pDesc->BufferDesc.Height, pDesc->BufferDesc.RefreshRate, pDesc->OutputWindow);
 	auto hr = g_origCreateSwapChain(This, pDevice, pDesc, ppSwapChain);
 	if (*ppSwapChain)
 	{
@@ -87,6 +94,9 @@ static HRESULT STDMETHODCALLTYPE CreateSwapChainHook(IDXGIFactory2* This, IUnkno
 
 		auto oldPresent = HookVtableFunction(&(*ppSwapChain)->lpVtbl->Present, PresentHook);
 		g_origPresent = (oldPresent) ? oldPresent : g_origPresent;
+
+		auto oldResizeBuffers = HookVtableFunction(&(*ppSwapChain)->lpVtbl->ResizeBuffers, ResizeBuffersHook);
+		g_origResizeBuffers = (oldResizeBuffers) ? oldResizeBuffers : g_origResizeBuffers;
 	}
 	g_swapChain = *ppSwapChain;
 	return hr;
@@ -94,7 +104,7 @@ static HRESULT STDMETHODCALLTYPE CreateSwapChainHook(IDXGIFactory2* This, IUnkno
 
 static HRESULT WINAPI CreateDXGIFactory2Hook(UINT Flags, REFIID riid, void** ppFactory)
 {
-	HRESULT hr = g_origCreateDXGIFactory2(Flags, riid, ppFactory);
+	HRESULT hr = g_origCreateDXGIFactory2(Flags | DXGI_CREATE_FACTORY_DEBUG, riid, ppFactory);
 
 	if (SUCCEEDED(hr))
 	{

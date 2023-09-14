@@ -95,6 +95,7 @@ namespace EXVSLauncher {
 			this->listboxInstances->Name = L"listboxInstances";
 			this->listboxInstances->Size = System::Drawing::Size(141, 109);
 			this->listboxInstances->TabIndex = 0;
+			this->listboxInstances->ItemCheck += gcnew System::Windows::Forms::ItemCheckEventHandler(this, &MainWindow::listboxInstances_ItemCheck);
 			this->listboxInstances->SelectedIndexChanged += gcnew System::EventHandler(this, &MainWindow::listboxInstances_SelectedIndexChanged);
 			// 
 			// buttonLaunch
@@ -315,25 +316,30 @@ private:
 
 	void ReloadLeft();
 	void ReloadRight();
+	void ReloadBottom();
 	void ReloadAll();
 
 	ClientConfiguration* Current();
 
-	System::Void MainWindow_Load(System::Object^ sender, System::EventArgs^ e);
-	System::Void buttonAdd_Click(System::Object^ sender, System::EventArgs^ e);
-	System::Void buttonDelete_Click(System::Object^ sender, System::EventArgs^ e);
-	System::Void buttonLaunch_Click(System::Object^ sender, System::EventArgs^ e);
-	System::Void textName_Changed(System::Object^ sender, System::EventArgs^ e);
-	System::Void textStoragePath_Changed(System::Object^ sender, System::EventArgs^ e);
-	System::Void comboMode_Changed(System::Object^ sender, System::EventArgs^ e);
-	System::Void checkboxHidden_Changed(System::Object^ sender, System::EventArgs^ e);
+	void MainWindow_Load(System::Object^ sender, System::EventArgs^ e);
 
-	System::Void comboInterface_Changed(System::Object^ sender, System::EventArgs^ e);
-	System::Void textInterface_Changed(System::Object^ sender, System::EventArgs^ e);
+	void listboxInstances_SelectedIndexChanged(System::Object^ sender, System::EventArgs^ e);
+	void listboxInstances_ItemCheck(System::Object^ sender, System::Windows::Forms::ItemCheckEventArgs^ e);
 
-	System::Void textGamePath_Changed(System::Object^ sender, System::EventArgs^ e);
-	System::Void textServerPath_Changed(System::Object^ sender, System::EventArgs^ e);
-	System::Void checkboxRebind_Changed(System::Object^ sender, System::EventArgs^ e);
-	System::Void listboxInstances_SelectedIndexChanged(System::Object^ sender, System::EventArgs^ e);
+	void buttonAdd_Click(System::Object^ sender, System::EventArgs^ e);
+	void buttonDelete_Click(System::Object^ sender, System::EventArgs^ e);
+	void buttonLaunch_Click(System::Object^ sender, System::EventArgs^ e);
+
+	void textName_Changed(System::Object^ sender, System::EventArgs^ e);
+	void textStoragePath_Changed(System::Object^ sender, System::EventArgs^ e);
+	void comboMode_Changed(System::Object^ sender, System::EventArgs^ e);
+	void checkboxHidden_Changed(System::Object^ sender, System::EventArgs^ e);
+
+	void comboInterface_Changed(System::Object^ sender, System::EventArgs^ e);
+	void textInterface_Changed(System::Object^ sender, System::EventArgs^ e);
+
+	void textGamePath_Changed(System::Object^ sender, System::EventArgs^ e);
+	void textServerPath_Changed(System::Object^ sender, System::EventArgs^ e);
+	void checkboxRebind_Changed(System::Object^ sender, System::EventArgs^ e);
 };
 }

@@ -7,8 +7,8 @@
 
 enum class ClientMode
 {
-	LiveMonitor = 0,
-	Client = 1,
+	Client = 0,
+	LiveMonitor = 1,
 };
 
 struct IpAddress
@@ -25,7 +25,7 @@ struct ClientConfiguration
 {
 	std::string name;
 	std::string storagePath;
-	ClientMode mode = ClientMode::LiveMonitor;
+	ClientMode mode = ClientMode::Client;
 	bool hidden = false;
 	std::variant<std::monostate, IpAddress, InterfaceName> networkInterface;
 

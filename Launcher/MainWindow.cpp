@@ -94,6 +94,17 @@ namespace EXVSLauncher
 		ignoreEvents_ = previousIgnore;
 	}
 
+	void MainWindow::ReloadBottom()
+	{
+		bool previousIgnore = ignoreEvents_;
+		ignoreEvents_ = true;
+
+		textGamePath->Text = gcnew System::String(state_->config.gamePath.c_str());
+		textServerPath->Text = gcnew System::String(state_->config.serverPath.c_str());
+
+		ignoreEvents_ = previousIgnore;
+	}
+
 	void MainWindow::ReloadAll()
 	{
 		bool previousIgnore = ignoreEvents_;
@@ -101,6 +112,7 @@ namespace EXVSLauncher
 
 		ReloadLeft();
 		ReloadRight();
+		ReloadBottom();
 
 		ignoreEvents_ = previousIgnore;
 	}
@@ -112,7 +124,7 @@ namespace EXVSLauncher
 		return &state_->config.clients[*state_->selected];
 	}
 
-	System::Void MainWindow::MainWindow_Load(System::Object^ sender, System::EventArgs^ e)
+	void MainWindow::MainWindow_Load(System::Object^ sender, System::EventArgs^ e)
 	{
 		// TODO: Serialize/deserialize the config to/from disk.
 		state_->config.rebindOnLaunch = true;
@@ -145,6 +157,7 @@ namespace EXVSLauncher
 			.mode = ClientMode::Client,
 			.hidden = false,
 			.networkInterface = InterfaceName("vEthernet (PCB3)"),
+			.enabled = false,
 		});
 		state_->config.clients.emplace_back(ClientConfiguration{
 			.name = "PCB4",
@@ -152,12 +165,13 @@ namespace EXVSLauncher
 			.mode = ClientMode::Client,
 			.hidden = false,
 			.networkInterface = InterfaceName("vEthernet (PCB4)"),
+			.enabled = false,
 		});
 
 		ReloadAll();
 	}
 
-	System::Void MainWindow::listboxInstances_SelectedIndexChanged(System::Object^ sender, System::EventArgs^ e)
+	void MainWindow::listboxInstances_SelectedIndexChanged(System::Object^ sender, System::EventArgs^ e)
 	{
 		if (ignoreEvents_) return;
 
@@ -172,15 +186,22 @@ namespace EXVSLauncher
 		}
 		ReloadRight();
 	}
+	
+	void MainWindow::listboxInstances_ItemCheck(System::Object^ sender, System::Windows::Forms::ItemCheckEventArgs^ e)
+	{
+		if (ignoreEvents_) return;
+		
+		state_->config.clients[e->Index].enabled = e->NewValue == CheckState::Checked;
+	}
 
-	System::Void MainWindow::buttonAdd_Click(System::Object^ sender, System::EventArgs^ e)
+	void MainWindow::buttonAdd_Click(System::Object^ sender, System::EventArgs^ e)
 	{
 		state_->config.clients.emplace_back();
 		state_->selected = state_->config.clients.size() - 1;
 		ReloadAll();
 	}
 
-	System::Void MainWindow::buttonDelete_Click(System::Object^ sender, System::EventArgs^ e)
+	void MainWindow::buttonDelete_Click(System::Object^ sender, System::EventArgs^ e)
 	{
 		if (state_->config.clients.size() == 0)
 			return;
@@ -191,13 +212,13 @@ namespace EXVSLauncher
 		ReloadAll();
 	}
 
-	System::Void MainWindow::buttonLaunch_Click(System::Object^ sender, System::EventArgs^ e)
+	void MainWindow::buttonLaunch_Click(System::Object^ sender, System::EventArgs^ e)
 	{
 		// TODO: Validate the configuration and display errors to the user.
 		Launch(state_->config);
 	}
 
-	System::Void MainWindow::textName_Changed(System::Object^ sender, System::EventArgs^ e)
+	void MainWindow::textName_Changed(System::Object^ sender, System::EventArgs^ e)
 	{
 		if (ignoreEvents_) return;
 
@@ -208,7 +229,7 @@ namespace EXVSLauncher
 		ReloadLeft();
 	}
 
-	System::Void MainWindow::textStoragePath_Changed(System::Object^ sender, System::EventArgs^ e)
+	void MainWindow::textStoragePath_Changed(System::Object^ sender, System::EventArgs^ e)
 	{
 		if (ignoreEvents_) return;
 
@@ -218,7 +239,7 @@ namespace EXVSLauncher
 		current->storagePath = to_string(textStoragePath->Text);
 	}
 
-	System::Void MainWindow::comboMode_Changed(System::Object^ sender, System::EventArgs^ e)
+	void MainWindow::comboMode_Changed(System::Object^ sender, System::EventArgs^ e)
 	{
 		if (ignoreEvents_) return;
 
@@ -228,7 +249,7 @@ namespace EXVSLauncher
 		current->mode = ClientMode(comboMode->SelectedIndex);
 	}
 
-	System::Void MainWindow::checkboxHidden_Changed(System::Object^ sender, System::EventArgs^ e)
+	void MainWindow::checkboxHidden_Changed(System::Object^ sender, System::EventArgs^ e)
 	{
 		if (ignoreEvents_) return;
 
@@ -238,7 +259,7 @@ namespace EXVSLauncher
 		current->hidden = checkboxHidden->Checked;
 	}
 
-	System::Void MainWindow::comboInterface_Changed(System::Object^ sender, System::EventArgs^ e)
+	void MainWindow::comboInterface_Changed(System::Object^ sender, System::EventArgs^ e)
 	{
 		if (ignoreEvents_) return;
 
@@ -266,24 +287,24 @@ namespace EXVSLauncher
 		}
 	}
 
-	System::Void MainWindow::textInterface_Changed(System::Object^ sender, System::EventArgs^ e)
+	void MainWindow::textInterface_Changed(System::Object^ sender, System::EventArgs^ e)
 	{
 		return comboInterface_Changed(sender, e);
 	}
 
-	System::Void MainWindow::textGamePath_Changed(System::Object^ sender, System::EventArgs^ e)
+	void MainWindow::textGamePath_Changed(System::Object^ sender, System::EventArgs^ e)
 	{
 		if (ignoreEvents_) return;
 		state_->config.gamePath = to_string(textGamePath->Text);
 	}
 
-	System::Void MainWindow::textServerPath_Changed(System::Object^ sender, System::EventArgs^ e)
+	void MainWindow::textServerPath_Changed(System::Object^ sender, System::EventArgs^ e)
 	{
 		if (ignoreEvents_) return;
 		state_->config.serverPath = to_string(textServerPath->Text);
 	}
 
-	System::Void MainWindow::checkboxRebind_Changed(System::Object^ sender, System::EventArgs^ e)
+	void MainWindow::checkboxRebind_Changed(System::Object^ sender, System::EventArgs^ e)
 	{
 		if (ignoreEvents_) return;
 
