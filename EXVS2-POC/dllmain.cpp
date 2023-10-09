@@ -3,6 +3,7 @@
 #include <shellapi.h>
 
 #include <algorithm>
+#include <chrono>
 #include <filesystem>
 #include <string>
 #include <string_view>
@@ -21,6 +22,8 @@
 #include "SocketHooks.h"
 #include "VirtualKeyMapping.h"
 #include "WindowedDxgi.h"
+
+using namespace std::chrono_literals;
 
 static std::vector<std::string> Split(const std::string& string, char delimiter)
 {
@@ -208,7 +211,16 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
             for (auto offset : PATCH_TARGETS) {
               patch_targets.push_back(base + offset);
             }
+
+            auto before = std::chrono::steady_clock::now();
             determinize::Determinize(std::move(patch_targets), base);
+            auto after = std::chrono::steady_clock::now();
+
+            printf(
+                "Patched %zu floating point approximations with deterministic "
+                "implementations in %dms\n",
+                PATCH_TARGETS.size(),
+                static_cast<int>((after - before) / 1.0ms));
         }
         break;
     case DLL_THREAD_ATTACH:  // NOLINT(bugprone-branch-clone)
