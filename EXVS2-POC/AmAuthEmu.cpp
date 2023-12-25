@@ -2,8 +2,9 @@
 #include "Windows.h"
 #include <format>
 
-#include "MinHook.h"
+#include "COMHooks.h"
 #include "INIReader.h"
+#include "MinHook.h"
 #include "log.h"
 
 /*
@@ -466,47 +467,11 @@ public:
     }
 };
 
-
-static HRESULT (STDAPICALLTYPE* g_origCoCreateInstance)(
-    const IID *const rclsid,
-    LPUNKNOWN pUnkOuter,
-    DWORD dwClsContext,
-    const IID *const riid,
-    LPVOID *ppv);
-
-
-static HRESULT STDAPICALLTYPE CoCreateInstanceHook(
-    const IID* const rclsid,
-    LPUNKNOWN pUnkOuter,
-    DWORD dwClsContext,
-    const IID* const riid,
-    LPVOID *ppv)
-{
-    HRESULT result;
-
-    LPOLESTR clsidStr = nullptr;
-    LPOLESTR iidStr = nullptr;
-    StringFromIID(*rclsid, &clsidStr);
-    StringFromIID(*riid, &iidStr);
-
-    if (IsEqualGUID(*rclsid, IID_CAuthFactory) && IsEqualGUID(*riid, IID_CAuth))
-    {
-        auto cauth = new CAuth();
-        result = cauth->QueryInterface(*riid, ppv);
-        trace("CoCreateInstance (hooked) (clsid=%S, pUnk=%p, clsCtx=%d, riid=%S) = %d\n", clsidStr, pUnkOuter, dwClsContext, iidStr, result);
-    }
-    else
-    {
-        result = g_origCoCreateInstance(rclsid, pUnkOuter, dwClsContext, riid, ppv);
-        trace("CoCreateInstance(clsid=%S, pUnk=%p, clsCtx=%d, riid=%S) = %d\n", clsidStr, pUnkOuter, dwClsContext, iidStr, result);
-    }
-
-    CoTaskMemFree(clsidStr);
-    CoTaskMemFree(iidStr);
-    return result;
-}
-
 void InitAmAuthEmu()
 {
-    MH_CreateHookApi(L"ole32.dll", "CoCreateInstance", CoCreateInstanceHook, reinterpret_cast<void**>(&g_origCoCreateInstance));  // NOLINT(clang-diagnostic-microsoft-cast)
+    RegisterCOMHook("CAuth", IID_CAuthFactory, IID_CAuth,
+                    [](REFCLSID clsid, LPUNKNOWN outer, DWORD clsctx, REFIID iid, void** ppv) {
+                        auto cauth = new CAuth();
+                        return cauth->QueryInterface(iid, ppv);
+                    });
 }

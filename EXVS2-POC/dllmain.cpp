@@ -13,6 +13,7 @@
 #include <MinHook.h>
 
 #include "AmAuthEmu.h"
+#include "COMHooks.h"
 #include "Configs.h"
 #include "GameHooks.h"
 #include "Input.h"
@@ -60,6 +61,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
             InitializeHooks(std::move(basePath));
             InitializeJvs();
             InitDXGIWindowHook();
+            InitializeCOMHooks();
             MH_EnableHook(MH_ALL_HOOKS);
 
             auto base = reinterpret_cast<char*>(GetModuleHandle(nullptr));
