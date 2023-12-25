@@ -7,6 +7,11 @@
 
 #include "VirtualKeyMapping.h"
 
+struct AudioConfig
+{
+    std::optional<std::string> Device;
+};
+
 struct StartupConfig
 {
     bool Windowed = false;
@@ -23,6 +28,8 @@ struct StartupConfig
     std::optional<std::string> PrimaryDNS;
     std::string ServerAddress;
     std::string RegionCode;
+
+    AudioConfig Audio;
 };
 
 extern StartupConfig globalConfig;

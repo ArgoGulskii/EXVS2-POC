@@ -128,6 +128,8 @@ static void ReadStartupConfig(StartupConfig* config, INIReader& reader)
     config->AuthServerIp = reader.Get("config", "AuthIP", "127.0.0.1");
     config->ServerAddress = reader.Get("config", "Server", "127.0.0.1");
     config->RegionCode = reader.Get("config", "Region", "1");
+
+    config->Audio.Device = reader.GetOptional("audio", "Device");
 }
 
 static void ReadInputConfig(InputConfig* config, INIReader& reader)
