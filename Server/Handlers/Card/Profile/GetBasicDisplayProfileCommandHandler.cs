@@ -3,13 +3,14 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using nue.protocol.exvs;
 using Server.Mappers;
+using Server.Models.Cards;
 using Server.Persistence;
 using WebUI.Shared.Dto.Enum;
 using WebUI.Shared.Dto.Response;
 
 namespace Server.Handlers.Card.Profile;
 
-public record GetBasicDisplayProfileCommand(string AccessCode, string ChipId) : IRequest<BasicDisplayProfile>;
+public record GetBasicDisplayProfileCommand(string AccessCode, string ChipId, bool HasCode) : IRequest<BasicDisplayProfile>;
 
 public class GetBasicDisplayProfileCommandHandler : IRequestHandler<GetBasicDisplayProfileCommand, BasicDisplayProfile>
 {
@@ -25,7 +26,15 @@ public class GetBasicDisplayProfileCommandHandler : IRequestHandler<GetBasicDisp
         var cardProfile = context.CardProfiles
             .Include(x => x.UserDomain)
             .Include(x => x.PilotDomain)
-            .FirstOrDefault(x => x.AccessCode == request.AccessCode && x.ChipId == request.ChipId);
+            .FirstOrDefault(x => x.ChipId == request.ChipId);
+
+        if ( request.HasCode )
+        {
+            cardProfile = context.CardProfiles
+                .Include(x => x.UserDomain)
+                .Include(x => x.PilotDomain)
+                .FirstOrDefault(x => x.AccessCode == request.AccessCode && x.ChipId == request.ChipId);
+        }
         
         if (cardProfile == null)
         {

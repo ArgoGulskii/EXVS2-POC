@@ -5,8 +5,8 @@ using WebUI.Shared.Dto.Common;
 namespace Server.Mappers;
 
 [Mapper]
-public static partial class GamepadGroupMapper
+public static partial class ControllerGroupMapper
 {
-    public static partial GamepadConfig ToGamePadConfig(this Response.LoadCard.MobileUserGroup.GamepadGroup gamepadGroup);
-    public static partial Response.LoadCard.MobileUserGroup.GamepadGroup ToGamepadGroup(this GamepadConfig gamepadConfig);
+    public static partial ControllerConfig ToControllerConfig(this Response.LoadCard.MobileUserGroup.ControllerGroup controllerGroup);
+    public static partial Response.LoadCard.MobileUserGroup.ControllerGroup ToControllerGroup(this ControllerConfig controllerConfig);
 }

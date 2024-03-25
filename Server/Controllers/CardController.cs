@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using nue.protocol.exvs;
 using Server.Handlers.Card;
+using Server.Handlers.Card.Controller;
 using Server.Handlers.Card.Gamepad;
 using Server.Handlers.Card.Message;
 using Server.Handlers.Card.MobileSuit;
@@ -39,10 +40,18 @@ public class CardController : BaseController<CardController>
     [Produces("application/json")]
     public async Task<ActionResult<BasicDisplayProfile>> GetBasicDisplayProfile(String accessCode, String chipId)
     {
-        var response = await mediator.Send(new GetBasicDisplayProfileCommand(accessCode, chipId));
+        var response = await mediator.Send(new GetBasicDisplayProfileCommand(accessCode, chipId, true));
         return response;
     }
-    
+
+    [HttpGet("getBasicDisplayProfileById/{chipId}")]
+    [Produces("application/json")]
+    public async Task<ActionResult<BasicDisplayProfile>> GetBasicDisplayProfileById(String chipId)
+    {
+        var response = await mediator.Send(new GetBasicDisplayProfileCommand("", chipId, false));
+        return response;
+    }
+
     [HttpPost("updateBasicProfile")]
     [Produces("application/json")]
     public async Task<ActionResult<BasicResponse>> UpdateBasicProfile([FromBody] UpdateBasicProfileRequest request)
@@ -50,7 +59,24 @@ public class CardController : BaseController<CardController>
         var response = await mediator.Send(new UpdateBasicProfileCommand(request));
         return response;
     }
-    
+
+    [HttpGet("getControllerConfigById/{chipId}")]
+    [Produces("application/json")]
+    public async Task<ActionResult<ControllerConfig>> GetControllerConfigById(String chipId)
+    {
+        var response = await mediator.Send(new GetControllerConfigCommand(chipId));
+        return response;
+    }
+
+    [HttpPost("updateControllerConfig")]
+    [Produces("application/json")]
+    public async Task<ActionResult<BasicResponse>> UpsertControllerConfig([FromBody] UpsertControllerConfigRequest request)
+    {
+        Console.WriteLine("reached");
+        var response = await mediator.Send(new UpsertControllerConfigCommand(request));
+        return response;
+    }
+
     [HttpGet("getEchelonProfile/{accessCode}/{chipId}")]
     [Produces("application/json")]
     public async Task<ActionResult<EchelonProfile>> GetEchelonProfile(String accessCode, String chipId)
