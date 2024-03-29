@@ -26,9 +26,6 @@ public class UpsertControllerConfigCommandHandler : IRequestHandler<UpsertContro
     
     public Task<BasicResponse> Handle(UpsertControllerConfigCommand request, CancellationToken cancellationToken)
     {
-        Console.WriteLine("upserting...");
-        Console.WriteLine(request);
-
         var updateRequest = request.Request;
 
         Console.WriteLine(updateRequest);

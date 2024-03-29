@@ -72,7 +72,6 @@ public class CardController : BaseController<CardController>
     [Produces("application/json")]
     public async Task<ActionResult<BasicResponse>> UpsertControllerConfig([FromBody] UpsertControllerConfigRequest request)
     {
-        Console.WriteLine("reached");
         var response = await mediator.Send(new UpsertControllerConfigCommand(request));
         return response;
     }

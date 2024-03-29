@@ -5293,32 +5293,22 @@ namespace nue.protocol.exvs
                         => global::ProtoBuf.Extensible.GetExtensionObject(ref __pbn__extensionData, createIfMissing);
 
                     [global::ProtoBuf.ProtoMember(1, Name = @"a_key", IsRequired = true)]
-                    [DefaultValue(1)]
-                    public uint AKey { get; set; }
+                    public int[] AKey { get; set; }
 
                     [global::ProtoBuf.ProtoMember(2, Name = @"b_key", IsRequired = true)]
-                    [DefaultValue(4)]
-                    public uint BKey { get; set; }
+                    public int[] BKey { get; set; }
 
                     [global::ProtoBuf.ProtoMember(3, Name = @"c_key", IsRequired = true)]
-                    [DefaultValue(6)]
-                    public uint CKey { get; set; }
+                    public int[] CKey { get; set; }
 
                     [global::ProtoBuf.ProtoMember(4, Name = @"d_key", IsRequired = true)]
-                    [DefaultValue(2)]
-                    public uint DKey { get; set; }
+                    public int[] DKey { get; set; }
 
                     [global::ProtoBuf.ProtoMember(5, Name = @"start_key", IsRequired = true)]
-                    [DefaultValue(10)]
-                    public uint StartKey { get; set; }
+                    public int[] StartKey { get; set; }
 
-                    [global::ProtoBuf.ProtoMember(6, Name = @"coin_key", IsRequired = true)]
-                    [DefaultValue(13)]
-                    public uint CoinKey { get; set; }
-
-                    [global::ProtoBuf.ProtoMember(7, Name = @"card_key", IsRequired = true)]
-                    [DefaultValue(12)]
-                    public uint CardKey { get; set; }
+                    [global::ProtoBuf.ProtoMember(6, Name = @"card_key", IsRequired = true)]
+                    public int[] CardKey { get; set; }
 
                 }
 

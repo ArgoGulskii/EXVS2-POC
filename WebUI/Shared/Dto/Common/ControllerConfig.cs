@@ -2,11 +2,10 @@
 
 public class ControllerConfig
 {
-    public uint AKey { get; set; } = 1;
-    public uint BKey { get; set; } = 4;
-    public uint CKey { get; set; } = 6;
-    public uint DKey { get; set; } = 2;
-    public uint StartKey { get; set; } = 10;
-    public uint CoinKey { get; set; } = 13;
-    public uint CardKey { get; set; } = 12;
+    public int[] AKey { get; set; } = { 1 };
+    public int[] BKey { get; set; } = { 4 };
+    public int[] CKey { get; set; } = { 6 };
+    public int[] DKey { get; set; } = { 2 };
+    public int[] StartKey { get; set; } = { 10 };
+    public int[] CardKey { get; set; } = { 12 };
 }
