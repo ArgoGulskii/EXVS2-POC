@@ -5092,7 +5092,7 @@ namespace nue.protocol.exvs
                 [global::ProtoBuf.ProtoMember(29, Name = @"partner_recruit_am_id_nglist")]
                 public uint[] PartnerRecruitAmIdNglists { get; set; }
 
-                [global::ProtoBuf.ProtoMember(15, Name = @"controller")]
+                [global::ProtoBuf.ProtoMember(30, Name = @"controller")]
                 public ControllerGroup Controller { get; set; }
 
                 [global::ProtoBuf.ProtoContract()]
