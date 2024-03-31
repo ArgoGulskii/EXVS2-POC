@@ -5304,10 +5304,22 @@ namespace nue.protocol.exvs
                     [global::ProtoBuf.ProtoMember(4, Name = @"d_key", IsRequired = true)]
                     public int[] DKey { get; set; }
 
-                    [global::ProtoBuf.ProtoMember(5, Name = @"start_key", IsRequired = true)]
+                    [global::ProtoBuf.ProtoMember(5, Name = @"sub_key", IsRequired = true)]
+                    public int[] SubKey { get; set; }
+
+                    [global::ProtoBuf.ProtoMember(6, Name = @"specialshooting_key", IsRequired = true)]
+                    public int[] SpecialShootingKey { get; set; }
+
+                    [global::ProtoBuf.ProtoMember(7, Name = @"specialmelee_key", IsRequired = true)]
+                    public int[] SpecialMeleeKey { get; set; }
+
+                    [global::ProtoBuf.ProtoMember(8, Name = @"burst_key", IsRequired = true)]
+                    public int[] BurstKey { get; set; }
+
+                    [global::ProtoBuf.ProtoMember(9, Name = @"start_key", IsRequired = true)]
                     public int[] StartKey { get; set; }
 
-                    [global::ProtoBuf.ProtoMember(6, Name = @"card_key", IsRequired = true)]
+                    [global::ProtoBuf.ProtoMember(10, Name = @"card_key", IsRequired = true)]
                     public int[] CardKey { get; set; }
 
                 }
