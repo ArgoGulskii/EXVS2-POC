@@ -11,5 +11,5 @@ public class ControllerConfig
     public int[] SpecialMeleeKey { get; set; } = { };
     public int[] BurstKey { get; set; } = { };
     public int[] StartKey { get; set; } = { 10 };
-    public int[] CardKey { get; set; } = { 12 };
+    public int[] CardKey { get; set; } = { 13 };
 }
